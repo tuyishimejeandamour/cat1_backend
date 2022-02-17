@@ -1,26 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { CreatePostDto } from './dto/create-bill.dto';
-import { UpdatePostDto } from './dto/update-bill.dto';
+import { Model } from 'mongoose';
+import { Bill, BillDocument } from './entities/bill.entity';
+import { calculateExpireDate } from 'src/utils/tokenValidation';
 
 @Injectable()
-export class PostsService {
-  create(createPostDto: CreatePostDto) {
-    return 'This action adds a new post';
+export class BillService {
+
+  constructor(
+    @InjectModel(Bill.name)
+    private templateModel: Model<BillDocument>
+  ) { }
+  create(createBillDto: CreatePostDto) {
+    if (createBillDto.amount < 100) {
+      return
+    }
+
+    if ((createBillDto.amount % 100) != 0) {
+      return
+    }
+
+    if (createBillDto.amount / 100 > 365 * 5) {
+      return
+    }
+    const data = { ...createBillDto, expiredat:calculateExpireDate(createBillDto.amount) , createdat:Date.now() }
+    return this.templateModel.create(data)
+
+
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  async findToken(token: number) {
+    const toke = await this.templateModel.findOne({token:token})
+    if (!this.isExipered(toke)) {
+      return new NotAcceptableException("token is expired")
+    }
+    return {...toke,remain:this.remain(toke)}
+  }
+  isExipered(token) {
+    const remain = this.remain(token)
+    if(remain > 0){
+      return true;
+    }else{
+      return false
+    }
+  }
+  remain(token){
+    return  Date.now() - new Date().setDate(new Date(token.token).getDate()+token.expiredat)
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  findOne(userNumber: number) {
+    return this.templateModel.find({ usernumber: userNumber });
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} post`;
-  }
 }

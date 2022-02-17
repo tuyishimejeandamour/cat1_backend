@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { PostsService } from './bill.service';
+import { Controller, Get, Post, Body,  Param, NotFoundException,} from '@nestjs/common';
+import { UsersService } from 'src/users/users.service';
+import { BillService } from './bill.service';
 import { CreatePostDto } from './dto/create-bill.dto';
-import { UpdatePostDto } from './dto/update-bill.dto';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly billService: BillService,
+    private readonly userService: UsersService
+    ) {}
 
   @Post()
   create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+      if (this.userService.findById(createPostDto.userNumber)) {
+        return this.billService.create(createPostDto);
+      }else{
+        return new NotFoundException("user is notfound")
+      }
+    
+     
   }
 
-  @Get()
-  findAll() {
-    return this.postsService.findAll();
+  @Get(':token')
+  findOne(@Param('token') id: string) {
+    return this.billService.findToken(+id);
+  }
+  @Get(':usernumber')
+  findByNumber(@Param('usernumber') id: string) {
+    return this.billService.findOne(+id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
-  }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
-  }
+  
 }
