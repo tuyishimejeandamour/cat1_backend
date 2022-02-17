@@ -3,13 +3,15 @@ import * as mongoose from 'mongoose';
 
 @Schema()
 export class Bill {
-    _id: string;
+    _id?: string;
     @Prop({ required: true })
     usernumber: number;
     @Prop({reguired:true})
     token:number
     @Prop({ required: true })
-    expired: string;
+    expired: number;
+    @Prop({required: true})
+    createAt:number
 }
 
 export type BillDocument = Bill & mongoose.Document;

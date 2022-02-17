@@ -1,6 +1,6 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreatePostDto } from './dto/create-bill.dto';
+import { CreateBillDto } from './dto/create-bill.dto';
 import { Model } from 'mongoose';
 import { Bill, BillDocument } from './entities/bill.entity';
 import { calculateExpireDate } from 'src/utils/tokenValidation';
@@ -12,7 +12,7 @@ export class BillService {
     @InjectModel(Bill.name)
     private templateModel: Model<BillDocument>
   ) { }
-  create(createBillDto: CreatePostDto) {
+  create(createBillDto: CreateBillDto) {
     if (createBillDto.amount < 100) {
       return
     }
@@ -24,7 +24,7 @@ export class BillService {
     if (createBillDto.amount / 100 > 365 * 5) {
       return
     }
-    const data = { ...createBillDto, expiredat:calculateExpireDate(createBillDto.amount) , createdat:Date.now() }
+    const data = { ...createBillDto, expire:calculateExpireDate(createBillDto.amount) , createAt:Date.now() }
     return this.templateModel.create(data)
 
 

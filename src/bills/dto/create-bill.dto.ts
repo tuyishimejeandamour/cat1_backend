@@ -1,4 +1,4 @@
-export class CreatePostDto {
-   userNumber:number;
+export class CreateBillDto {
+   usernumber:number;
    amount:number
 }
