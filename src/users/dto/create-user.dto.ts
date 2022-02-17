@@ -5,5 +5,5 @@ export class CreateUserDto {
   @ApiProperty()
   @IsAlphanumeric()
   @MaxLength(30)
-  username: string;
+  usernumber: string;
 }
